@@ -1,0 +1,16 @@
+{
+  "name": "loop",
+  "version": "0.0.1",
+  "description": "hybrid game loop",
+  "keywords": ["game", "loop"],
+  "author": "stagas",
+  "license": "MIT",
+  "dependencies": {
+    "component/emitter": "*",
+    "component/raf": "*"
+  },
+  "development": {
+    "stagas/tree-emit": "*"
+  },
+  "scripts": ["index.js"]
+}

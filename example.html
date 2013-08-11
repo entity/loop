@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>loop</title>
+    <style>
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .counter {
+      display: inline-block;
+      position: absolute;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 5px;
+      border: 1px solid #000;
+    }
+
+    </style>
+  </head>
+  <body>
+    <script src="build/build.js"></script>
+    <script>
+
+    // dependencies
+
+    var Loop = require('loop');
+    var emit = require('tree-emit');
+    var slice = [].slice;
+
+    // a div component
+
+    function Div() {
+      this.el = document.createElement('div');
+      this.container = document.body;
+    }
+
+    Div.prototype.setClass = function(className) {
+      this.el.className = className;
+    };
+
+    Div.prototype.setPosition = function(vec) {
+      this.el.style.left = vec.x + 'px';
+      this.el.style.top = vec.y + 'px';
+    };
+
+    Div.prototype.setContents = function(html) {
+      this.el.innerHTML = html;
+    };
+
+    Div.prototype.onstart = function() {
+      this.container.appendChild(this.el);
+    };
+
+    // a mouse component
+
+    function Mouse() {
+      this.container = document.body;
+      this.position = new Vector;
+      this.previous = new Vector;
+      this.diff = new Vector;
+    }
+
+    Mouse.prototype.onstart = function() {
+      var self = this;
+      this.container.onmousemove = function(e) {
+        self.position.x = e.clientX;
+        self.position.y = e.clientY;
+      };
+    };
+
+    Mouse.prototype.onupdate = function() {
+      this.previous.x = this.position.x;
+      this.previous.y = this.position.y;
+    };
+
+    function Vector() {
+      this.x = 0;
+      this.y = 0;
+    }
+
+    function Movable() {
+      this.position = new Vector;
+      this.velocity = new Vector;
+      this.friction = 0.88;
+    }
+
+    Movable.prototype.onupdate = function() {
+      this.position.x += this.velocity.x;
+      this.position.y += this.velocity.y;
+
+      this.velocity.x *= this.friction;
+      this.velocity.y *= this.friction;
+    };
+
+    // a simple Counter entity constructor
+
+    function Counter() {
+      this.div = new Div;
+      this.div.setClass('counter');
+      this.movable = new Movable;
+      this.mouse = new Mouse;
+      this.speed = 0.05;
+    }
+
+    Counter.prototype.onupdate = function() {
+      this.movable.velocity.x +=
+        (this.mouse.position.x - this.movable.position.x)
+      * this.speed;
+
+      this.movable.velocity.y +=
+        (this.mouse.position.y - this.movable.position.y)
+      * this.speed;
+    };
+
+    Counter.prototype.onrender = function(deltaTime, alpha, frame, timeElapsed) {
+      this.div.setContents(
+      'deltaTime: ' + deltaTime + '<br>' +
+      'alpha: ' + alpha.toFixed(2) + '<br>' +
+      'frame: ' + frame + '<br>' +
+      'time elapsed: ' + (timeElapsed / 1000).toFixed(1)
+      );
+
+      this.div.setPosition(this.movable.position);
+    };
+
+    // the world
+
+    var world = emit.wrap(new Loop());
+
+    world.counter = new Counter;
+
+    world.fps(60).start();
+
+    </script>
+  </body>
+</html>
